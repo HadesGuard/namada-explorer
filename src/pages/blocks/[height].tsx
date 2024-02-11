@@ -8,6 +8,8 @@ import {
   Table,
   TableContainer,
   Tag,
+  TagLabel,
+  TagLeftIcon,
   Tbody,
   Td,
   Text,
@@ -17,7 +19,7 @@ import {
   useColorModeValue,
   useToast,
 } from '@chakra-ui/react'
-import { FiChevronRight, FiHome } from 'react-icons/fi'
+import { FiCheck, FiChevronRight, FiHome, FiX } from 'react-icons/fi'
 import NextLink from 'next/link'
 import Head from 'next/head'
 import { useRouter } from 'next/router'
@@ -27,7 +29,7 @@ import { fetchBlockDetail } from '@/apis'
 
 type TxInfo = {
   hash: string
-  message: string
+  returnCode: number
   amount: number
 }
 
@@ -65,7 +67,7 @@ export default function DetailBlock() {
         const txs = res.tx_hashes.map((tx: any) => {
           return {
             hash: tx.hash_id,
-            message: tx.tx_type,
+            returnCode: tx.return_code,
             amount: 0,
           }
         })
@@ -198,7 +200,7 @@ export default function DetailBlock() {
               <Thead>
                 <Tr>
                   <Th>Tx Hash</Th>
-                  <Th>Messages</Th>
+                  <Th>Status</Th>
                   <Th>Fee</Th>
                   <Th>Height</Th>
                   <Th>Time</Th>
@@ -217,7 +219,19 @@ export default function DetailBlock() {
                         <Text color={'cyan.400'}>{tx.hash}</Text>
                       </Link>
                     </Td>
-                    <Td>{tx.message}</Td>
+                    <Td>
+                      {tx?.returnCode == 0 ? (
+                        <Tag variant="subtle" colorScheme="green">
+                          <TagLeftIcon as={FiCheck} />
+                          <TagLabel>Success</TagLabel>
+                        </Tag>
+                      ) : (
+                        <Tag variant="subtle" colorScheme="red">
+                          <TagLeftIcon as={FiX} />
+                          <TagLabel>Error</TagLabel>
+                        </Tag>
+                      )}
+                    </Td>
                     <Td>{tx.amount}</Td>
                     <Td>{height}</Td>
                     <Td>{block?.time ? timeFromNow(block?.time) : ''}</Td>

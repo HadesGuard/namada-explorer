@@ -23,7 +23,7 @@ import {
   TagLabel,
 } from '@chakra-ui/react'
 import NextLink from 'next/link'
-import { FiChevronRight, FiHome, FiCheck } from 'react-icons/fi'
+import { FiChevronRight, FiHome, FiCheck, FiX } from 'react-icons/fi'
 import { selectTxEvent } from '@/store/streamSlice'
 import { toHex } from '@cosmjs/encoding'
 import { timeFromNow, trimHash } from '@/utils/helper'
@@ -34,9 +34,8 @@ const MAX_ROWS = 20
 type TxData = {
   height: number
   hash: string
-  message: string
+  returnCode: number
   time: string
-  result: string
 }
 
 export default function Transactions() {
@@ -58,9 +57,8 @@ export default function Transactions() {
           return {
             height: block.header.height,
             hash: tx.hash,
-            message: tx.tx_type,
             time: block.header.time,
-            result: 'Success',
+            returnCode: tx.return_code,
           }
         })
       ).then((txs) => {
@@ -73,9 +71,8 @@ export default function Transactions() {
     const tx = {
       height: txEvent.height,
       hash: toHex(txEvent.hash),
-      message: '',
+      returnCode: txEvent.result.code,
       time: new Date().toISOString(),
-      result: txEvent.result.code == 0 ? 'Success' : 'Error',
     } as TxData
 
     if (txs.length) {
@@ -131,8 +128,7 @@ export default function Transactions() {
               <Thead>
                 <Tr>
                   <Th>Tx Hash</Th>
-                  <Th>Result</Th>
-                  <Th>Messages</Th>
+                  <Th>Status</Th>
                   <Th>Height</Th>
                   <Th>Time</Th>
                 </Tr>
@@ -151,12 +147,18 @@ export default function Transactions() {
                       </Link>
                     </Td>
                     <Td>
-                      <Tag variant="subtle" colorScheme="green">
-                        <TagLeftIcon as={FiCheck} />
-                        <TagLabel>{tx.result}</TagLabel>
-                      </Tag>
+                      {tx?.returnCode == 0 ? (
+                        <Tag variant="subtle" colorScheme="green">
+                          <TagLeftIcon as={FiCheck} />
+                          <TagLabel>Success</TagLabel>
+                        </Tag>
+                      ) : (
+                        <Tag variant="subtle" colorScheme="red">
+                          <TagLeftIcon as={FiX} />
+                          <TagLabel>Error</TagLabel>
+                        </Tag>
+                      )}
                     </Td>
-                    <Td>{tx.message}</Td>
                     <Td>{tx.height}</Td>
                     <Td>{timeFromNow(tx.time)}</Td>
                   </Tr>

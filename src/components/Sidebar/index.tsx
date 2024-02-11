@@ -13,7 +13,6 @@ import {
   useDisclosure,
   BoxProps,
   FlexProps,
-  Button,
   Heading,
 } from '@chakra-ui/react'
 import {
@@ -23,7 +22,6 @@ import {
   FiStar,
   FiSliders,
   FiMenu,
-  FiLogOut,
   FiGithub,
   FiAlertCircle,
   FiGlobe,
@@ -31,9 +29,6 @@ import {
 import { IconType } from 'react-icons'
 import NextLink from 'next/link'
 import { useRouter } from 'next/router'
-import { selectSubsNewBlock, selectSubsTxEvent } from '@/store/streamSlice'
-import { useSelector } from 'react-redux'
-import { LS_RPC_ADDRESS } from '@/utils/constant'
 
 interface LinkItemProps {
   name: string
@@ -100,16 +95,6 @@ interface SidebarProps extends BoxProps {
 }
 
 const SidebarContent = ({ onClose, ...rest }: SidebarProps) => {
-  const subsNewBlock = useSelector(selectSubsNewBlock)
-  const subsTxEvent = useSelector(selectSubsTxEvent)
-
-  const handleDisconnect = () => {
-    subsNewBlock?.unsubscribe()
-    subsTxEvent?.unsubscribe()
-    window.localStorage.removeItem(LS_RPC_ADDRESS)
-    window.location.replace('/')
-  }
-
   return (
     <Box
       bg={useColorModeValue('light-container', 'dark-container')}
@@ -214,25 +199,9 @@ const NavItem = ({ icon, children, route, isBlank, ...rest }: NavItemProps) => {
             : 'transparent'
         }
         color={isSelected ? 'black' : useColorModeValue('black', 'white')}
-        // _hover={{
-        //   color: isSelected
-        //     ? 'white'
-        //     : useColorModeValue('light-theme', 'dark-theme'),
-        // }}
         {...rest}
       >
-        {icon && (
-          <Icon
-            mr="4"
-            fontSize="16"
-            // _groupHover={{
-            //   color: isSelected
-            //     ? 'white'
-            //     : useColorModeValue('light-theme', 'dark-theme'),
-            // }}
-            as={icon}
-          />
-        )}
+        {icon && <Icon mr="4" fontSize="16" as={icon} />}
         {children}
       </Flex>
     </Link>

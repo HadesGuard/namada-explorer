@@ -17,7 +17,6 @@ import {
   NumberDecrementStepper,
   Select,
   Text,
-  SkeletonText,
 } from '@chakra-ui/react'
 import {
   ArrowLeftIcon,

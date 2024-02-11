@@ -1,8 +1,5 @@
 import {
   Box,
-  Card,
-  CardBody,
-  CardHeader,
   Divider,
   HStack,
   Heading,
@@ -27,18 +24,9 @@ import { useRouter } from 'next/router'
 import { useEffect, useState } from 'react'
 import { useSelector } from 'react-redux'
 import { selectTmClient } from '@/store/connectSlice'
-import { getTx, getBlock } from '@/rpc/query'
-import { IndexedTx, Block, Coin } from '@cosmjs/stargate'
-import { TxRaw, Tx } from 'cosmjs-types/cosmos/tx/v1beta1/tx'
-import {
-  timeFromNow,
-  displayDate,
-  isBech32Address,
-  getTypeMsg,
-} from '@/utils/helper'
-import { decodeMsg, DecodeMsg } from '@/encoding'
+import { timeFromNow, displayDate, isBech32Address } from '@/utils/helper'
+import { DecodeMsg } from '@/encoding'
 import { fetchBlockByHash, fetchTransactionDetail } from '@/apis'
-import { fromHex } from '@cosmjs/encoding'
 
 type TxDetail = {
   hash: string
@@ -46,7 +34,7 @@ type TxDetail = {
   gasWanted: string
   gasUsed: string
   fee: string
-  status: string
+  returnCode: number
   data: string
 }
 
@@ -72,13 +60,12 @@ export default function DetailTransaction() {
     if (hash) {
       fetchTransactionDetail(hash as string)
         .then((res) => {
-          console.log(res)
           const tx = {
             hash: res.hash,
             blockId: res.block_id,
-            gasWanted: "0",
-            gasUsed: "0",
-            status: 'Success',
+            gasWanted: '0',
+            gasUsed: '0',
+            returnCode: res.return_code,
             fee: res.fee_amount_per_gas_unit,
             data: res.data,
           } as TxDetail
@@ -92,7 +79,6 @@ export default function DetailTransaction() {
     if (tx?.blockId) {
       fetchBlockByHash(tx?.blockId)
         .then((res) => {
-          console.log(res)
           const block = {
             chainId: res.header.chain_id,
             height: res.header.height,
@@ -187,10 +173,8 @@ export default function DetailTransaction() {
             style={{ textDecoration: 'none' }}
             _focus={{ boxShadow: 'none' }}
           >
-            <Text color={'cyan.400'}>Blocks</Text>
+            <Text color={'cyan.400'}>Transaction Detail</Text>
           </Link>
-          <Icon fontSize="16" as={FiChevronRight} />
-          <Text>Tx</Text>
         </HStack>
         <Box
           mt={8}
@@ -223,10 +207,17 @@ export default function DetailTransaction() {
                     <b>Status</b>
                   </Td>
                   <Td>
-                  <Tag variant="subtle" colorScheme="green">
+                    {tx?.returnCode == 0 ? (
+                      <Tag variant="subtle" colorScheme="green">
                         <TagLeftIcon as={FiCheck} />
                         <TagLabel>Success</TagLabel>
                       </Tag>
+                    ) : (
+                      <Tag variant="subtle" colorScheme="red">
+                        <TagLeftIcon as={FiX} />
+                        <TagLabel>Error</TagLabel>
+                      </Tag>
+                    )}
                   </Td>
                 </Tr>
                 <Tr>
@@ -289,43 +280,15 @@ export default function DetailTransaction() {
           p={4}
         >
           <Heading size={'md'} mb={4}>
-            Messages
+            Raw Data
           </Heading>
-
-          {msgs.map((msg, index) => (
-            <Card variant={'outline'} key={index} mb={8}>
-              <CardHeader>
-                <Heading size="sm">{getTypeMsg(msg.typeUrl)}</Heading>
-              </CardHeader>
-              <Divider />
-              <CardBody>
-                <TableContainer>
-                  <Table variant="unstyled" size={'sm'}>
-                    <Tbody>
-                      <Tr>
-                        <Td pl={0} width={150}>
-                          <b>typeUrl</b>
-                        </Td>
-                        <Td>{msg.typeUrl}</Td>
-                      </Tr>
-                      {Object.keys(msg.data ?? {}).map((key) => (
-                        <Tr key={key}>
-                          <Td pl={0} width={150}>
-                            <b>{key}</b>
-                          </Td>
-                          <Td>
-                            {showMsgData(
-                              msg.data ? msg.data[key as keyof {}] : ''
-                            )}
-                          </Td>
-                        </Tr>
-                      ))}
-                    </Tbody>
-                  </Table>
-                </TableContainer>
-              </CardBody>
-            </Card>
-          ))}
+          <Box
+            overflow="auto"
+            maxHeight="500px"
+            bg={useColorModeValue('silver', 'gray.800')}
+          >
+            <pre>{JSON.stringify(tx, null, 2)}</pre>
+          </Box>
         </Box>
       </main>
     </>

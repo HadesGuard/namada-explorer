@@ -8,7 +8,6 @@ import {
   Link,
   useColorModeValue,
   Text,
-  useToast,
 } from '@chakra-ui/react'
 import { useEffect, useState } from 'react'
 import NextLink from 'next/link'
@@ -22,10 +21,6 @@ import {
   fetchValidatorUptime,
   fetchValidators,
 } from '@/apis'
-import { getValidatorPagination } from '@/rpc/query'
-import { useSelector } from 'react-redux'
-import { selectTmClient } from '@/store/connectSlice'
-import { toHex } from '@cosmjs/encoding'
 
 type ValidatorData = {
   validator: string
@@ -82,7 +77,6 @@ export default function Validators() {
   const [page, setPage] = useState(0)
   const [perPage, setPerPage] = useState(10)
   const [total, setTotal] = useState(0)
-  const tmClient = useSelector(selectTmClient)
   const [data, setData] = useState<ValidatorData[]>([])
   const [isLoading, setIsLoading] = useState(true)
 
