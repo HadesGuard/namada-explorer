@@ -1,13 +1,13 @@
 import { createSlice } from '@reduxjs/toolkit'
 import { AppState } from './index'
 import { HYDRATE } from 'next-redux-wrapper'
-import { Tendermint34Client } from '@cosmjs/tendermint-rpc'
+import { Comet38Client } from '@cosmjs/tendermint-rpc'
 
 // Type for our state
 export interface ConnectState {
   rpcAddress: string
   connectState: boolean
-  tmClient: Tendermint34Client | null
+  tmClient: Comet38Client | null
 }
 
 // Initial state
