@@ -37,59 +37,74 @@ import {
   getTypeMsg,
 } from '@/utils/helper'
 import { decodeMsg, DecodeMsg } from '@/encoding'
+import { fetchBlockByHash, fetchTransactionDetail } from '@/apis'
+import { fromHex } from '@cosmjs/encoding'
 
-export default function DetailBlock() {
+type TxDetail = {
+  hash: string
+  blockId: string
+  gasWanted: string
+  gasUsed: string
+  fee: string
+  status: string
+  data: string
+}
+
+type BlockDate = {
+  chainId: string
+  height: number
+  hash: string
+  time: string
+  proposer: string
+}
+
+export default function DetailTransaction() {
   const router = useRouter()
   const toast = useToast()
   const { hash } = router.query
   const tmClient = useSelector(selectTmClient)
-  const [tx, setTx] = useState<IndexedTx | null>(null)
-  const [txData, setTxData] = useState<Tx | null>(null)
-  const [block, setBlock] = useState<Block | null>(null)
+  const [tx, setTx] = useState<TxDetail | null>(null)
+  // const [txData, setTxData] = useState<Tx | null>(null)
+  const [block, setBlock] = useState<BlockDate | null>(null)
   const [msgs, setMsgs] = useState<DecodeMsg[]>([])
 
   useEffect(() => {
-    if (tmClient && hash) {
-      getTx(tmClient, hash as string)
-        .then(setTx)
+    if (hash) {
+      fetchTransactionDetail(hash as string)
+        .then((res) => {
+          console.log(res)
+          const tx = {
+            hash: res.hash,
+            blockId: res.block_id,
+            gasWanted: "0",
+            gasUsed: "0",
+            status: 'Success',
+            fee: res.fee_amount_per_gas_unit,
+            data: res.data,
+          } as TxDetail
+          setTx(tx)
+        })
         .catch(showError)
     }
-  }, [tmClient, hash])
+  }, [hash])
 
   useEffect(() => {
-    if (tmClient && tx?.height) {
-      getBlock(tmClient, tx?.height).then(setBlock).catch(showError)
+    if (tx?.blockId) {
+      fetchBlockByHash(tx?.blockId)
+        .then((res) => {
+          console.log(res)
+          const block = {
+            chainId: res.header.chain_id,
+            height: res.header.height,
+            hash: res.block_id,
+            time: res.header.time,
+            proposer: res.header.proposer_address,
+          } as BlockDate
+          setBlock(block)
+        })
+        .catch(showError)
     }
   }, [tmClient, tx])
-
-  useEffect(() => {
-    if (tx?.tx) {
-      const data = TxRaw.decode(tx?.tx)
-      console.log(data)
-      setTxData(data)
-    }
-  }, [tx])
-
-  useEffect(() => {
-    if (txData?.body?.messages.length && !msgs.length) {
-      for (const message of txData?.body?.messages) {
-        const msg = decodeMsg(message.typeUrl, message.value)
-        setMsgs((prevMsgs) => [...prevMsgs, msg])
-      }
-    }
-  }, [txData])
-
-  const getFee = (fees: Coin[] | undefined) => {
-    if (fees && fees.length) {
-      return (
-        <HStack>
-          <Text>{fees[0].amount}</Text>
-          <Text textColor="cyan.800">{fees[0].denom}</Text>
-        </HStack>
-      )
-    }
-    return ''
-  }
 
   const showMsgData = (msgData: any) => {
     if (msgData) {
@@ -195,7 +210,7 @@ export default function DetailBlock() {
                   <Td pl={0} width={150}>
                     <b>Chain Id</b>
                   </Td>
-                  <Td>{block?.header.chainId}</Td>
+                  <Td>{block?.chainId}</Td>
                 </Tr>
                 <Tr>
                   <Td pl={0} width={150}>
@@ -208,17 +223,10 @@ export default function DetailBlock() {
                     <b>Status</b>
                   </Td>
                   <Td>
-                    {tx?.code == 0 ? (
-                      <Tag variant="subtle" colorScheme="green">
+                  <Tag variant="subtle" colorScheme="green">
                         <TagLeftIcon as={FiCheck} />
                         <TagLabel>Success</TagLabel>
                       </Tag>
-                    ) : (
-                      <Tag variant="subtle" colorScheme="red">
-                        <TagLeftIcon as={FiX} />
-                        <TagLabel>Error</TagLabel>
-                      </Tag>
-                    )}
                   </Td>
                 </Tr>
                 <Tr>
@@ -228,11 +236,11 @@ export default function DetailBlock() {
                   <Td>
                     <Link
                       as={NextLink}
-                      href={'/blocks/' + tx?.height}
+                      href={'/blocks/' + block?.height}
                       style={{ textDecoration: 'none' }}
                       _focus={{ boxShadow: 'none' }}
                     >
-                      <Text color={'cyan.400'}>{tx?.height}</Text>
+                      <Text color={'cyan.400'}>{block?.height}</Text>
                     </Link>
                   </Td>
                 </Tr>
@@ -241,9 +249,9 @@ export default function DetailBlock() {
                     <b>Time 2</b>
                   </Td>
                   <Td>
-                    {block?.header.time
-                      ? `${timeFromNow(block?.header.time)} ( ${displayDate(
-                          block?.header.time
+                    {block?.time
+                      ? `${timeFromNow(block?.time)} ( ${displayDate(
+                          block?.time
                         )} )`
                       : ''}
                   </Td>
@@ -252,7 +260,7 @@ export default function DetailBlock() {
                   <Td pl={0} width={150}>
                     <b>Fee</b>
                   </Td>
-                  <Td>{getFee(txData?.authInfo?.fee?.amount)}</Td>
+                  <Td>{tx?.fee} NAAN</Td>
                 </Tr>
                 <Tr>
                   <Td pl={0} width={150}>
@@ -266,7 +274,7 @@ export default function DetailBlock() {
                   <Td pl={0} width={150}>
                     <b>Memo</b>
                   </Td>
-                  <Td>{txData?.body?.memo}</Td>
+                  <Td>{}</Td>
                 </Tr>
               </Tbody>
             </Table>
