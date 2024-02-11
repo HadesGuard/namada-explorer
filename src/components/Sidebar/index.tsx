@@ -170,16 +170,6 @@ const SidebarContent = ({ onClose, ...rest }: SidebarProps) => {
             </NavItem>
           ))}
         </Box>
-        <Flex justifyContent="center" mb="4">
-          <Button
-            leftIcon={<FiLogOut />}
-            colorScheme="red"
-            variant="outline"
-            onClick={handleDisconnect}
-          >
-            Disconnect
-          </Button>
-        </Flex>
       </Flex>
     </Box>
   )

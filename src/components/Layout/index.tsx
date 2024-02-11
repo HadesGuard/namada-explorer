@@ -106,7 +106,7 @@ export default function Layout({ children }: { children: ReactNode }) {
       ) : (
         <></>
       )}
-      {!connectState && !isLoading ? <Connect /> : <></>}
+      {!connectState && !isLoading ? <Connect /> : null}
     </>
   )
 }
