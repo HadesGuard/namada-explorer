@@ -324,7 +324,7 @@ export default function DetailAccount() {
                         <Text
                           color={useColorModeValue('light-theme', 'dark-theme')}
                         >
-                          {trimHash(tx.hash)}
+                          {trimHash(toHex(tx.hash))}
                         </Text>
                       </Link>
                     </Td>
