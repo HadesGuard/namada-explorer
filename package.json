@@ -9,7 +9,8 @@
     "prepare": "husky install",
     "lint": "next lint",
     "format": "prettier --check .",
-    "format:fix": "prettier --write ."
+    "format:fix": "prettier --write .",
+    "prod": "next build && next start "
   },
   "dependencies": {
     "@chakra-ui/icons": "^2.0.18",
