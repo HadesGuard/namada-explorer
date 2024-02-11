@@ -88,68 +88,68 @@ export default function Validators() {
 
   useEffect(() => {
     const controller = new AbortController()
-    if (tmClient) {
-      getValidatorPagination(tmClient, page + 1, perPage)
-        .then(async (response: any) => {
-          const { validators, total } = response
-          setTotal(total)
-          const lastedBlock = await tmClient.block();
-          console.log('response', response)
-          // Set initial data with loading state
-          const initialData = validators.map((val: any) => ({
-            validator: val.address,
-            uptime: 'Loading...',
-            votingPower: val.votingPower.toString(),
-            commission: '5',
-            commitSignatures: 'Loading...',
-          }))
-          setData(initialData)
+    fetchValidators(page + 1, perPage, { signal: controller.signal })
+      .then(async (response: any) => {
+        const { validators, total } = response
+        setTotal(total)
+        const lastedBlock = await fetchLastBlock().then((data) => {
+          return data.header.height
+        })
 
-          // Fetch actual data
-          const promises = validators.map((val: any, index: number) => {
-            const uptimePromise = fetchValidatorUptime(
-              toHex(val.address),
-              0,
-              lastedBlock.block.header.height
-            )
-              .then((data) => (data.uptime * 100).toFixed(2) + '%')
-              .catch(() => 'Loading...')
+        // Set initial data with loading state
+        const initialData = validators.map((val: any) => ({
+          validator: val.address,
+          uptime: 'Loading...',
+          votingPower: convertVotingPower(val.voting_power),
+          commission: '5',
+          commitSignatures: 'Loading...',
+        }))
+        setData(initialData)
 
-            const commitSignaturesPromise = fetchValidatorCommitSignatures(
-              toHex(val.address)
-            )
-              .then((data) => data)
-              .catch(() => 'Loading...')
+        // Fetch actual data
+        const promises = validators.map((val: any, index: number) => {
+          const uptimePromise = fetchValidatorUptime(
+            val.address,
+            0,
+            lastedBlock
+          )
+            .then((data) => (data.uptime * 100).toFixed(2) + '%')
+            .catch(() => 'Loading...')
 
-            return Promise.all([uptimePromise, commitSignaturesPromise]).then(
-              ([uptime, commitSignatures]) => {
-                setData((prevData) =>
-                  prevData.map((item, idx) =>
-                    idx === index
-                      ? {
-                          validator: val.address,
-                          uptime: parseFloat(uptime),
-                          votingPower: convertVotingPower(val.voting_power),
-                          commission: '5',
-                          commitSignatures,
-                        }
-                      : item
-                  )
+          const commitSignaturesPromise = fetchValidatorCommitSignatures(
+            val.address
+          )
+            .then((data) => data)
+            .catch(() => 'Loading...')
+
+          return Promise.all([uptimePromise, commitSignaturesPromise]).then(
+            ([uptime, commitSignatures]) => {
+              setData((prevData) =>
+                prevData.map((item, idx) =>
+                  idx === index
+                    ? {
+                        validator: val.address,
+                        uptime: parseFloat(uptime),
+                        votingPower: convertVotingPower(val.voting_power),
+                        commission: '5',
+                        commitSignatures,
+                      }
+                    : item
                 )
-              }
-            )
-          })
+              )
+            }
+          )
+        })
 
-          await Promise.all(promises)
-          setIsLoading(false)
-        })
-        .catch((e) => {
-          // Ignore errors caused by aborting the fetch request
-          if (e.name === 'AbortError') {
-            return
-          }
-        })
-    }
+        await Promise.all(promises)
+        setIsLoading(false)
+      })
+      .catch((e) => {
+        // Ignore errors caused by aborting the fetch request
+        if (e.name === 'AbortError') {
+          return
+        }
+      })
 
     return () => {
       // Abort the fetch request when a new one is made
