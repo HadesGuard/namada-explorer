@@ -10,10 +10,13 @@ import {
 import Head from 'next/head'
 import NextLink from 'next/link'
 import { FiChevronRight, FiHome } from 'react-icons/fi'
-import MintParameters from '@/components/Parameters/MintParameters'
-import StakingParameters from '@/components/Parameters/StakingParameters'
-import DistributionParameters from '@/components/Parameters/DistributionParameters'
-import SlashingParameters from '@/components/Parameters/SlashingParameters'
+import PoSParameters from '@/components/Parameters/PosParameters'
+// import StakingParameters from '@/components/Parameters/StakingParameters'
+// import DistributionParameters from '@/components/Parameters/DistributionParameters'
+// import SlashingParameters from '@/components/Parameters/SlashingParameters'
+// import GovParameters from '@/components/Parameters/GovParameters'
+import { fetchAndConvertToJSON } from '@/utils/helper'
+import ChainParameters from '@/components/Parameters/ChainParameters'
 import GovParameters from '@/components/Parameters/GovParameters'
 
 export default function Parameters() {
@@ -46,11 +49,9 @@ export default function Parameters() {
           <Icon fontSize="16" as={FiChevronRight} />
           <Text>Parameters</Text>
         </HStack>
-        <MintParameters />
-        <StakingParameters />
+        <ChainParameters />
+        <PoSParameters />
         <GovParameters />
-        <DistributionParameters />
-        <SlashingParameters />
       </main>
     </>
   )

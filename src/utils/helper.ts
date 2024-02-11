@@ -3,6 +3,7 @@ import relativeTime from 'dayjs/plugin/relativeTime'
 import duration from 'dayjs/plugin/duration'
 import { bech32 } from 'bech32'
 import { Coin } from 'cosmjs-types/cosmos/base/v1beta1/coin'
+import toml from 'toml'
 
 export const timeFromNow = (date: string): string => {
   dayjs.extend(relativeTime)
@@ -81,4 +82,30 @@ export const getTypeMsg = (typeUrl: string): string => {
     return arr[arr.length - 1].replace('Msg', '')
   }
   return ''
+}
+
+export async function fetchAndConvertToJSON() {
+  try {
+    const response = await fetch(
+      'https://raw.githubusercontent.com/TuanTQ15/namada-explorer/master/public/parameters.toml'
+    )
+    const data = await response.text()
+
+    // Parse the TOML data
+    const parsedData = toml.parse(data)
+
+    return parsedData
+  } catch (error) {
+    console.error('Error fetching data:', error)
+  }
+}
+
+export function camelCaseToTitleCase(camelCase: string) {
+  // Insert a space before all caps that are not immediately followed by another cap
+  let result = camelCase.replace(/([A-Z])(?![A-Z])/g, ' $1')
+
+  // Uppercase the first character
+  result = result.charAt(0).toUpperCase() + result.slice(1)
+
+  return result
 }

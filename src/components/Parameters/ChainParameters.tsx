@@ -12,16 +12,21 @@ import {
 import { useState, useEffect } from 'react'
 import { camelCaseToTitleCase, fetchAndConvertToJSON } from '@/utils/helper'
 
-type ProposalParameters = {
-  minProposalFund: number
-  maxProposalCodeSize: number
-  minProposalVotingPeriod: number
-  maxProposalPeriod: number
-  maxProposalContentSize: number
-  minProposalGraceEpochs: number
+type ChainParameters = {
+  maxTxBytes: number
+  nativeToken: string
+  minNumOfBlocks: number
+  maxExpectedTimePerBlock: number
+  maxProposalBytes: number
+  epochsPerYear: number
+  maxSignaturesPerTransaction: number
+  maxBlockGas: number
+  feeUnshieldingGasLimit: number
+  feeUnshieldingDescriptionsLimit: number
+  minimumGasPrice: string
 }
 
-export default function GovParameters() {
+export default function ChainParameters() {
   const [params, setParams] = useState({})
   const [isHidden, setIsHidden] = useState(false)
   const [isLoaded, setIsLoaded] = useState(false)
@@ -31,20 +36,24 @@ export default function GovParameters() {
       .then((response) => {
         console.log(response)
         if (response) {
-          const govParameters = {
-            minProposalFund: response.gov_params.min_proposal_fund,
-            maxProposalCodeSize: response.gov_params.max_proposal_code_size,
-            minProposalVotingPeriod:
-              response.gov_params.min_proposal_voting_period,
-            maxProposalPeriod: response.gov_params.max_proposal_period,
-            maxProposalContentSize:
-              response.gov_params.max_proposal_content_size,
-            minProposalGraceEpochs:
-              response.gov_params.min_proposal_grace_epochs,
-          } as ProposalParameters
-
-          console.log(govParameters)
-          setParams(govParameters)
+          const chainParameters = {
+            maxTxBytes: response.parameters.max_tx_bytes,
+            nativeToken: response.parameters.native_token,
+            minNumOfBlocks: response.parameters.min_num_of_blocks,
+            maxExpectedTimePerBlock:
+              response.parameters.max_expected_time_per_block,
+            maxProposalBytes: response.parameters.max_proposal_bytes,
+            epochsPerYear: response.parameters.epochs_per_year,
+            maxSignaturesPerTransaction:
+              response.parameters.max_signatures_per_transaction,
+            maxBlockGas: response.parameters.max_block_gas,
+            feeUnshieldingGasLimit:
+              response.parameters.fee_unshielding_gas_limit,
+            feeUnshieldingDescriptionsLimit:
+              response.parameters.fee_unshielding_descriptions_limit,
+            minimumGasPrice: response.parameters?.minimum_gas_price?.naan,
+          } as ChainParameters
+          setParams(chainParameters)
           setIsLoaded(true)
         }
       })

@@ -26,27 +26,6 @@ import {
   QueryParamsResponse as QuerySlashingParamsResponse,
 } from 'cosmjs-types/cosmos/slashing/v1beta1/query'
 
-export async function queryActiveValidators(
-  tmClient: Comet38Client,
-  page: number,
-  perPage: number
-): Promise<QueryValidatorsResponse> {
-  const queryClient = new QueryClient(tmClient)
-  const req = QueryValidatorsRequest.encode({
-    status: 'BOND_STATUS_BONDED',
-    pagination: PageRequest.fromJSON({
-      offset: page * perPage,
-      limit: perPage,
-      countTotal: true,
-    }),
-  }).finish()
-  const { value } = await queryClient.queryAbci(
-    '/cosmos.staking.v1beta1.Query/Validators',
-    req
-  )
-  return QueryValidatorsResponse.decode(value)
-}
-
 export async function queryProposals(
   tmClient: Comet38Client,
   page: number,
@@ -67,67 +46,4 @@ export async function queryProposals(
     req
   )
   return QueryProposalsResponse.decode(value)
-}
-
-export async function queryStakingParams(
-  tmClient: Comet38Client
-): Promise<QueryStakingParamsResponse> {
-  const queryClient = new QueryClient(tmClient)
-  const req = QueryStakingParamsRequest.encode({}).finish()
-  const { value } = await queryClient.queryAbci(
-    '/cosmos.staking.v1beta1.Query/Params',
-    req
-  )
-  return QueryStakingParamsResponse.decode(value)
-}
-
-export async function queryMintParams(
-  tmClient: Comet38Client
-): Promise<QueryMintParamsResponse> {
-  const queryClient = new QueryClient(tmClient)
-  const req = QueryMintParamsRequest.encode({}).finish()
-  const { value } = await queryClient.queryAbci(
-    '/cosmos.mint.v1beta1.Query/Params',
-    req
-  )
-  return QueryMintParamsResponse.decode(value)
-}
-
-export async function queryGovParams(
-  tmClient: Comet38Client,
-  paramsType: string
-): Promise<QueryGovParamsResponse> {
-  const queryClient = new QueryClient(tmClient)
-  const req = QueryGovParamsRequest.encode({
-    paramsType: paramsType,
-  }).finish()
-  const { value } = await queryClient.queryAbci(
-    '/cosmos.gov.v1beta1.Query/Params',
-    req
-  )
-  return QueryGovParamsResponse.decode(value)
-}
-
-export async function queryDistributionParams(
-  tmClient: Comet38Client
-): Promise<QueryDistributionParamsResponse> {
-  const queryClient = new QueryClient(tmClient)
-  const req = QueryDistributionParamsRequest.encode({}).finish()
-  const { value } = await queryClient.queryAbci(
-    '/cosmos.distribution.v1beta1.Query/Params',
-    req
-  )
-  return QueryDistributionParamsResponse.decode(value)
-}
-
-export async function querySlashingParams(
-  tmClient: Comet38Client
-): Promise<QuerySlashingParamsResponse> {
-  const queryClient = new QueryClient(tmClient)
-  const req = QuerySlashingParamsRequest.encode({}).finish()
-  const { value } = await queryClient.queryAbci(
-    '/cosmos.slashing.v1beta1.Query/Params',
-    req
-  )
-  return QuerySlashingParamsResponse.decode(value)
 }
