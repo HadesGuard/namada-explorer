@@ -30,8 +30,8 @@ import { MoonIcon, SunIcon } from '@chakra-ui/icons'
 import { StatusResponse } from '@cosmjs/tendermint-rpc'
 
 const heightRegex = /^\d+$/
-const txhashRegex = /^[a-fA-F0-9]{64}$/;
-const addrRegex = /^(tpknam|tnam)[a-zA-Z0-9]+$/;
+const txhashRegex = /^[a-fA-F0-9]{64}$/
+const addrRegex = /^(tpknam|tnam)[a-zA-Z0-9]+$/
 
 export default function Navbar() {
   const router = useRouter()
