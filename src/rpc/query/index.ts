@@ -1,10 +1,4 @@
-import {
-  Account,
-  Block,
-  Coin,
-  IndexedTx,
-  StargateClient,
-} from '@cosmjs/stargate'
+import { Account, Coin, StargateClient } from '@cosmjs/stargate'
 import {
   Comet38Client,
   TxSearchResponse,
@@ -30,22 +24,6 @@ export async function getValidatorPagination(
     page: page,
     per_page: perPage,
   })
-}
-
-export async function getBlock(
-  tmClient: Comet38Client,
-  height: number
-): Promise<Block> {
-  const client = await StargateClient.create(tmClient)
-  return client.getBlock(height)
-}
-
-export async function getTx(
-  tmClient: Comet38Client,
-  hash: string
-): Promise<IndexedTx | null> {
-  const client = await StargateClient.create(tmClient)
-  return client.getTx(hash)
 }
 
 export async function getAccount(
