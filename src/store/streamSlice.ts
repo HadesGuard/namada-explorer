@@ -30,11 +30,6 @@ export const streamSlice = createSlice({
       state.newBlock = action.payload
     },
 
-    // Action to set the tx event
-    setTxEvent(state, action) {
-      state.txEvent = action.payload
-    },
-
     // Action to set the subs state new block
     setSubsNewBlock(state, action) {
       state.subsNewBlock = action.payload
@@ -57,11 +52,10 @@ export const streamSlice = createSlice({
   },
 })
 
-export const { setNewBlock, setTxEvent, setSubsNewBlock, setSubsTxEvent } =
+export const { setNewBlock, setSubsNewBlock, setSubsTxEvent } =
   streamSlice.actions
 
 export const selectNewBlock = (state: AppState) => state.stream.newBlock
-export const selectTxEvent = (state: AppState) => state.stream.txEvent
 
 export const selectSubsNewBlock = (state: AppState) => state.stream.subsNewBlock
 export const selectSubsTxEvent = (state: AppState) => state.stream.subsTxEvent

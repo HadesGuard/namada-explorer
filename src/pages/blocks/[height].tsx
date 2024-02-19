@@ -17,9 +17,8 @@ import {
   Thead,
   Tr,
   useColorModeValue,
-  useToast,
 } from '@chakra-ui/react'
-import { FiCheck, FiChevronRight, FiHome, FiX } from 'react-icons/fi'
+import { FiChevronRight, FiHome } from 'react-icons/fi'
 import NextLink from 'next/link'
 import Head from 'next/head'
 import { useRouter } from 'next/router'
@@ -55,19 +54,18 @@ export default function DetailBlock() {
       fetchBlockDetail(parseInt(height as string)).then((res) => {
         console.log(res)
         const blockDetail = {
-          chainId: res.header.chain_id,
-          height: res.header.height,
-          appHash: res.header.app_hash,
-          txs: res.tx_hashes.length,
-          time: res.header.time,
-          blockId: res.block_id,
-          proposer: res.header.proposer_address,
+          chainId: res?.header.chain_id,
+          height: res?.header.height,
+          appHash: res?.header.app_hash,
+          txs: res?.tx_hashes.length,
+          time: res?.header.time,
+          blockId: res?.block_id.toString().toUpperCase(),
+          proposer: res?.header.proposer_address,
         } as BlockDetail
 
-        const txs = res.tx_hashes.map((tx: any) => {
+        const txs = res?.tx_hashes?.map((tx: any) => {
           return {
-            hash: tx.hash_id,
-            returnCode: tx.return_code,
+            hash: tx.hash_id.toString().toUpperCase(),
             amount: 0,
           }
         })
@@ -200,14 +198,14 @@ export default function DetailBlock() {
               <Thead>
                 <Tr>
                   <Th>Tx Hash</Th>
-                  <Th>Status</Th>
-                  <Th>Fee</Th>
+                  {/* <Th>Status</Th>
+                  <Th>Fee</Th> */}
                   <Th>Height</Th>
                   <Th>Time</Th>
                 </Tr>
               </Thead>
               <Tbody>
-                {txs.map((tx) => (
+                {txs?.map((tx) => (
                   <Tr key={tx.hash}>
                     <Td>
                       <Link
@@ -219,7 +217,7 @@ export default function DetailBlock() {
                         <Text color={'cyan.400'}>{tx.hash}</Text>
                       </Link>
                     </Td>
-                    <Td>
+                    {/* <Td>
                       {tx?.returnCode == 0 ? (
                         <Tag variant="subtle" colorScheme="green">
                           <TagLeftIcon as={FiCheck} />
@@ -231,8 +229,8 @@ export default function DetailBlock() {
                           <TagLabel>Error</TagLabel>
                         </Tag>
                       )}
-                    </Td>
-                    <Td>{tx.amount}</Td>
+                    </Td> */}
+                    {/* <Td>{tx.amount}</Td> */}
                     <Td>{height}</Td>
                     <Td>{block?.time ? timeFromNow(block?.time) : ''}</Td>
                   </Tr>

@@ -18,14 +18,13 @@ import {
   Thead,
   Tr,
   Tabs,
-  Tag,
+  Spinner,
 } from '@chakra-ui/react'
 import NextLink from 'next/link'
 import { FiChevronRight, FiHome } from 'react-icons/fi'
-import { selectNewBlock, selectTxEvent } from '@/store/streamSlice'
+import { selectNewBlock } from '@/store/streamSlice'
 import { toHex } from '@cosmjs/encoding'
-import { TxBody } from 'cosmjs-types/cosmos/tx/v1beta1/tx'
-import { timeFromNow, getTypeMsg, trimHash } from '@/utils/helper'
+import { timeFromNow, trimHash } from '@/utils/helper'
 import { fetchBlocks } from '@/apis'
 
 const MAX_ROWS = 20
@@ -45,10 +44,8 @@ type BlockData = {
 
 export default function Blocks() {
   const newBlock = useSelector(selectNewBlock)
-  const txEvent = useSelector(selectTxEvent)
   const [blocks, setBlocks] = useState<BlockData[]>([])
-
-  const [txs, setTxs] = useState<Tx[]>([])
+  const [loading, setLoading] = useState(true) // New state variable
 
   useEffect(() => {
     if (newBlock) {
@@ -57,14 +54,8 @@ export default function Blocks() {
   }, [newBlock])
 
   useEffect(() => {
-    if (txEvent) {
-      updateTxs(txEvent)
-    }
-  }, [txEvent])
-
-  useEffect(() => {
     fetchBlocks(1, MAX_ROWS).then((res) => {
-      const blocks = res.data.map((block: any) => {
+      const oldblocks = res.data.map((block: any) => {
         return {
           height: block.header.height,
           hash: block.block_id,
@@ -73,8 +64,8 @@ export default function Blocks() {
           proposer: block.header.proposer_address,
         }
       })
-
-      setBlocks(blocks)
+      setLoading(false)
+      setBlocks(oldblocks)
     })
   }, [])
 
@@ -95,23 +86,6 @@ export default function Blocks() {
       }
     } else {
       setBlocks([cookedBlock])
-    }
-  }
-
-  const updateTxs = (txEvent: TxEvent) => {
-    const tx = {
-      TxEvent: txEvent,
-      Timestamp: new Date(),
-    }
-    if (txs.length) {
-      if (
-        txEvent.height >= txs[0].TxEvent.height &&
-        txEvent.hash != txs[0].TxEvent.hash
-      ) {
-        setTxs((prevTx) => [tx, ...prevTx.slice(0, MAX_ROWS - 1)])
-      }
-    } else {
-      setTxs([tx])
     }
   }
 
@@ -162,26 +136,46 @@ export default function Blocks() {
                   <Th>Time</Th>
                 </Tr>
               </Thead>
-              <Tbody>
-                {blocks?.map((block) => (
-                  <Tr key={block.height}>
-                    <Td>
-                      <Link
-                        as={NextLink}
-                        href={'/blocks/' + block.height}
-                        style={{ textDecoration: 'none' }}
-                        _focus={{ boxShadow: 'none' }}
+
+              {loading ? (
+                <Tbody>
+                  <Tr>
+                    <Td colSpan={6}>
+                      <div
+                        style={{
+                          display: 'flex',
+                          justifyContent: 'center',
+                          alignItems: 'center',
+                          height: '200px', // Or any other height
+                        }}
                       >
-                        <Text color={'cyan.400'}>{block.height}</Text>
-                      </Link>
+                        <Spinner size="xl" />
+                      </div>
                     </Td>
-                    <Td noOfLines={1}>{trimHash(block.hash)}</Td>
-                    <Td>{block.txs}</Td>
-                    <Td>{block.proposer}</Td>
-                    <Td>{timeFromNow(block.time)}</Td>
                   </Tr>
-                ))}
-              </Tbody>
+                </Tbody>
+              ) : (
+                <Tbody>
+                  {blocks?.map((block) => (
+                    <Tr key={block.height}>
+                      <Td>
+                        <Link
+                          as={NextLink}
+                          href={'/blocks/' + block.height}
+                          style={{ textDecoration: 'none' }}
+                          _focus={{ boxShadow: 'none' }}
+                        >
+                          <Text color={'cyan.400'}>{block.height}</Text>
+                        </Link>
+                      </Td>
+                      <Td noOfLines={1}>{trimHash(block.hash)}</Td>
+                      <Td>{block.txs}</Td>
+                      <Td>{block.proposer}</Td>
+                      <Td>{timeFromNow(block.time)}</Td>
+                    </Tr>
+                  ))}
+                </Tbody>
+              )}
             </Table>
           </Tabs>
         </Box>

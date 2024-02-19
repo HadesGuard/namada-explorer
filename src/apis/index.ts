@@ -119,3 +119,29 @@ export async function fetchTransactions(page: number, perPage: number) {
     console.error('Error:', error)
   }
 }
+
+export async function fetchProposals() {
+  try {
+    const response = await fetch(
+      'https://it.api.namada.red/api/v1/chain/governance/proposals'
+    )
+    const { proposals } = await response.json()
+
+    return proposals
+  } catch (error) {
+    console.error('Error:', error)
+  }
+}
+
+export async function fetchValidatorState() {
+  try {
+    const response = await fetch(
+      'https://it.api.namada.red/api/v1/chain/governance/proposals'
+    )
+    const { proposals } = await response.json()
+
+    return proposals
+  } catch (error) {
+    console.error('Error:', error)
+  }
+}

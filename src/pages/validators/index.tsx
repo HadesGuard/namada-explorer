@@ -11,7 +11,7 @@ import {
 } from '@chakra-ui/react'
 import { useEffect, useState } from 'react'
 import NextLink from 'next/link'
-import { FiChevronRight, FiHome } from 'react-icons/fi'
+import { FiShield, FiHome } from 'react-icons/fi'
 import DataTable from '@/components/Datatable'
 import { createColumnHelper } from '@tanstack/react-table'
 import { convertVotingPower } from '@/utils/helper'
@@ -36,40 +36,25 @@ const columns = [
   columnHelper.accessor('validator', {
     cell: (info) => info.getValue(),
     header: 'Validator',
-    meta: {
-      style: { textAlign: 'center' },
-    },
   }),
   columnHelper.accessor('uptime', {
-    cell: (info) => info.getValue(),
+    cell: (info) =>
+      info.getValue() == 0
+        ? 'Loading...'
+        : Number(info.getValue()).toFixed(2) + '%',
     header: 'Up Time',
-    meta: {
-      style: { textAlign: 'center' },
-    },
   }),
   columnHelper.accessor('votingPower', {
     cell: (info) => info.getValue(),
     header: 'Voting Power',
-    meta: {
-      isNumeric: true,
-      style: { textAlign: 'center' },
-    },
   }),
   columnHelper.accessor('commitSignatures', {
     cell: (info) => info.getValue(),
     header: 'Commit Signatures',
-    meta: {
-      isNumeric: true,
-      style: { textAlign: 'center' },
-    },
   }),
   columnHelper.accessor('commission', {
-    cell: (info) => info.getValue(),
+    cell: (info) => info.getValue() + '%',
     header: 'Commission',
-    meta: {
-      isNumeric: true,
-      style: { textAlign: 'center' },
-    },
   }),
 ]
 
@@ -93,7 +78,7 @@ export default function Validators() {
         // Set initial data with loading state
         const initialData = validators.map((val: any) => ({
           validator: val.address,
-          uptime: 'Loading...',
+          uptime: 0,
           votingPower: convertVotingPower(val.voting_power),
           commission: '5',
           commitSignatures: 'Loading...',
@@ -185,7 +170,7 @@ export default function Validators() {
               as={FiHome}
             />
           </Link>
-          <Icon fontSize="16" as={FiChevronRight} />
+          <Icon fontSize="16" as={FiShield} />
           <Text>Validators</Text>
         </HStack>
         <Box

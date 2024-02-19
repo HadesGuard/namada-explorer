@@ -39,7 +39,7 @@ import { Account, Coin } from '@cosmjs/stargate'
 import { TxSearchResponse } from '@cosmjs/tendermint-rpc'
 import { toHex } from '@cosmjs/encoding'
 import { TxBody } from 'cosmjs-types/cosmos/tx/v1beta1/tx'
-import { trimHash, getTypeMsg } from '@/utils/helper'
+import { trimHash } from '@/utils/helper'
 
 export default function DetailAccount() {
   const router = useRouter()
@@ -127,13 +127,13 @@ export default function DetailAccount() {
     if (messages.length == 1) {
       return (
         <HStack>
-          <Tag colorScheme="cyan">{getTypeMsg(messages[0].typeUrl)}</Tag>
+          <Tag colorScheme="cyan">{messages[0].typeUrl}</Tag>
         </HStack>
       )
     } else if (messages.length > 1) {
       return (
         <HStack>
-          <Tag colorScheme="cyan">{getTypeMsg(messages[0].typeUrl)}</Tag>
+          <Tag colorScheme="cyan">{messages[0].typeUrl}</Tag>
           <Text textColor="cyan.800">+{messages.length - 1}</Text>
         </HStack>
       )

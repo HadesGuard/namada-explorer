@@ -31,7 +31,7 @@ import { StatusResponse } from '@cosmjs/tendermint-rpc'
 
 const heightRegex = /^\d+$/
 const txhashRegex = /^[a-fA-F0-9]{64}$/
-const addrRegex = /^(tpknam|tnam)[a-zA-Z0-9]+$/
+// const addrRegex = /^(tpknam|tnam)[a-zA-Z0-9]+$/
 
 export default function Navbar() {
   const router = useRouter()
@@ -77,11 +77,11 @@ export default function Navbar() {
       router.push('/blocks/' + inputSearch)
     } else if (txhashRegex.test(inputSearch)) {
       router.push('/txs/' + inputSearch)
-    } else if (addrRegex.test(inputSearch)) {
-      router.push('/accounts/' + inputSearch)
+      // } else if (addrRegex.test(inputSearch)) {
+      //   router.push('/accounts/' + inputSearch)
     } else {
       toast({
-        title: 'Invalid Height, Transaction or Account Address!',
+        title: 'Invalid Height, Transaction!',
         status: 'error',
         isClosable: true,
       })
@@ -150,7 +150,7 @@ export default function Navbar() {
               width={400}
               type={'text'}
               borderColor={useColorModeValue('light-theme', 'dark-theme')}
-              placeholder="Height/Transaction/Account Address"
+              placeholder="Block Height/Transaction Hash"
               onChange={handleInputSearch}
             />
           </ModalBody>

@@ -24,9 +24,9 @@ import { useRouter } from 'next/router'
 import { useEffect, useState } from 'react'
 import { useSelector } from 'react-redux'
 import { selectTmClient } from '@/store/connectSlice'
-import { timeFromNow, displayDate, isBech32Address } from '@/utils/helper'
-import { DecodeMsg } from '@/encoding'
+import { timeFromNow, displayDate } from '@/utils/helper'
 import { fetchBlockByHash, fetchTransactionDetail } from '@/apis'
+import { fromHex } from '@cosmjs/encoding'
 
 type TxDetail = {
   hash: string
@@ -36,9 +36,11 @@ type TxDetail = {
   fee: string
   returnCode: number
   data: string
+  tx: string
+  txType: string
 }
 
-type BlockDate = {
+type BlockData = {
   chainId: string
   height: number
   hash: string
@@ -52,9 +54,7 @@ export default function DetailTransaction() {
   const { hash } = router.query
   const tmClient = useSelector(selectTmClient)
   const [tx, setTx] = useState<TxDetail | null>(null)
-  // const [txData, setTxData] = useState<Tx | null>(null)
-  const [block, setBlock] = useState<BlockDate | null>(null)
-  const [msgs, setMsgs] = useState<DecodeMsg[]>([])
+  const [block, setBlock] = useState<BlockData | null>(null)
 
   useEffect(() => {
     if (hash) {
@@ -66,9 +66,20 @@ export default function DetailTransaction() {
             gasWanted: '0',
             gasUsed: '0',
             returnCode: res.return_code,
-            fee: res.fee_amount_per_gas_unit,
+            fee: res.fee_amount_per_gas_unit ? res.fee_amount_per_gas_unit : 0,
             data: res.data,
+            tx:
+              res.tx_type == 'Decrypted' && res.tx && res.tx.Ibc
+                ? {
+                    typeUrl: res.tx.Ibc.Any.type_url,
+                    value: [...res.tx.Ibc.Any.value.slice(0, 10), '...'],
+                  }
+                : { ...res.tx },
+            txType: res.tx_type,
           } as TxDetail
+          const hexData = fromHex(tx.data)
+          const text = new TextDecoder('utf-8').decode(hexData)
+          console.log('text', text)
           setTx(tx)
         })
         .catch(showError)
@@ -85,39 +96,12 @@ export default function DetailTransaction() {
             hash: res.block_id,
             time: res.header.time,
             proposer: res.header.proposer_address,
-          } as BlockDate
+          } as BlockData
           setBlock(block)
         })
         .catch(showError)
     }
   }, [tmClient, tx])
-
-  const showMsgData = (msgData: any) => {
-    if (msgData) {
-      if (Array.isArray(msgData)) {
-        return JSON.stringify(msgData)
-      }
-
-      if (!Array.isArray(msgData) && msgData.length) {
-        if (isBech32Address(msgData)) {
-          return (
-            <Link
-              as={NextLink}
-              href={'/accounts/' + msgData}
-              style={{ textDecoration: 'none' }}
-              _focus={{ boxShadow: 'none' }}
-            >
-              <Text color={'cyan.400'}>{msgData}</Text>
-            </Link>
-          )
-        } else {
-          return String(msgData)
-        }
-      }
-    }
-
-    return ''
-  }
 
   const showError = (err: Error) => {
     const errMsg = err.message

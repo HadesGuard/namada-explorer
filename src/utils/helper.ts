@@ -17,6 +17,12 @@ export const trimHash = (inputHash: string): string => {
   return first + '...' + last
 }
 
+export const trimHashLowerCase = (hash: string): string => {
+  const first = hash.slice(0, 10)
+  const last = hash.slice(hash.length - 10, hash.length)
+  return first + '...' + last
+}
+
 export const displayDate = (date: string): string => {
   return dayjs(date).format('YYYY-MM-DD HH:mm:ss')
 }
@@ -74,14 +80,6 @@ export const displayCoin = (deposit: Coin) => {
     return `${amount.toLocaleString()} ${symbol}`
   }
   return `${Number(deposit.amount).toLocaleString()} ${deposit.denom}`
-}
-
-export const getTypeMsg = (typeUrl: string): string => {
-  const arr = typeUrl.split('.')
-  if (arr.length) {
-    return arr[arr.length - 1].replace('Msg', '')
-  }
-  return ''
 }
 
 export async function fetchAndConvertToJSON() {

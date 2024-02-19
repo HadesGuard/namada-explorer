@@ -7,29 +7,40 @@ import {
   Icon,
   Link,
   Text,
-  useToast,
   useColorModeValue,
   Tag,
   Badge,
+  Stack,
+  Progress,
+  Tooltip,
 } from '@chakra-ui/react'
 import { useEffect, useState } from 'react'
-import { useSelector } from 'react-redux'
 import NextLink from 'next/link'
 import { FiChevronRight, FiHome } from 'react-icons/fi'
-import { selectTmClient } from '@/store/connectSlice'
-import { queryProposals } from '@/rpc/abci'
 import DataTable from '@/components/Datatable'
 import { createColumnHelper } from '@tanstack/react-table'
-import { getTypeMsg, displayDate } from '@/utils/helper'
-import { proposalStatus, proposalStatusList } from '@/utils/constant'
-import { decodeContentProposal } from '@/encoding'
+import { fetchProposals } from '@/apis'
+import { trimHashLowerCase } from '@/utils/helper'
 
 type Proposal = {
   id: number
-  title: string
+  author: string
   types: string
-  status: proposalStatus | undefined
-  votingEnd: string
+  status: string
+  startEpoch: number
+  endEpoch: number
+  yesPercentage: number
+  noPercentage: number
+  abstainPercentage: number
+}
+
+type ColorStatus = 'Pending' | 'Passed' | 'VotingPeriod' | 'Rejected'
+
+const color: Record<ColorStatus, string> = {
+  Pending: 'gray',
+  Passed: 'green',
+  VotingPeriod: 'orange',
+  Rejected: 'red',
 }
 
 const columnHelper = createColumnHelper<Proposal>()
@@ -39,9 +50,9 @@ const columns = [
     cell: (info) => `#${info.getValue()}`,
     header: '#ID',
   }),
-  columnHelper.accessor('title', {
-    cell: (info) => info.getValue(),
-    header: 'Title',
+  columnHelper.accessor('author', {
+    cell: (info) => trimHashLowerCase(info.getValue()),
+    header: 'Author',
   }),
   columnHelper.accessor('types', {
     cell: (info) => <Tag colorScheme="cyan">{info.getValue()}</Tag>,
@@ -49,67 +60,106 @@ const columns = [
   }),
   columnHelper.accessor('status', {
     cell: (info) => {
-      const value = info.getValue()
+      const value = info.getValue() as ColorStatus
       if (!value) {
-        return ''
+        return <Badge colorScheme={color['Pending']}>{value}</Badge>
       }
-      return <Badge colorScheme={value.color}>{value.status}</Badge>
+
+      return <Badge colorScheme={color[value]}>{value}</Badge>
     },
     header: 'Status',
   }),
-  columnHelper.accessor('votingEnd', {
+  columnHelper.accessor('startEpoch', {
     cell: (info) => info.getValue(),
-    header: 'Voting End',
+    header: 'Start Epoch',
+    meta: {
+      width: 20,
+    },
+  }),
+
+  columnHelper.accessor('endEpoch', {
+    cell: (info) => info.getValue(),
+    header: 'End Epoch',
+    meta: {
+      width: 20,
+    },
+  }),
+  columnHelper.accessor('yesPercentage', {
+    cell: (info) => {
+      if (info.row.original.status === 'Pending') {
+        return <Progress bg="gray.200" height={3} width={200} border={1} />
+      }
+
+      const yesPercentage = info.row.original.yesPercentage * 100
+      const abstainPercentage = info.row.original.abstainPercentage * 100
+      const noPercentage = 100 - yesPercentage - abstainPercentage
+
+      return (
+        <Stack direction="row" width={200} height={3} spacing={0}>
+          <Tooltip label={`${yesPercentage.toFixed(2)}% Yes`}>
+            <Box bg="green.500" width={`${yesPercentage}%`} />
+          </Tooltip>
+          <Tooltip label={`${noPercentage.toFixed(2)}% No`}>
+            <Box bg="red.500" width={`${noPercentage}%`} />
+          </Tooltip>
+          <Tooltip label={`${abstainPercentage.toFixed(2)}% Abstain`}>
+            <Box bg="gray" width={`${abstainPercentage}%`} />
+          </Tooltip>
+        </Stack>
+      )
+    },
+    header: 'Votes',
   }),
 ]
 
 export default function Proposals() {
-  const tmClient = useSelector(selectTmClient)
   const [page, setPage] = useState(0)
-  const [perPage, setPerPage] = useState(10)
+  const [perPage, setPerPage] = useState(20)
   const [total, setTotal] = useState(0)
   const [proposals, setProposals] = useState<Proposal[]>([])
   const [isLoading, setIsLoading] = useState(true)
-  const toast = useToast()
 
   useEffect(() => {
-    if (tmClient) {
-      setIsLoading(true)
-      queryProposals(tmClient, page, perPage)
-        .then((response) => {
-          setTotal(response.pagination?.total.low ?? 0)
-          const proposalsList: Proposal[] = response.proposals.map((val) => {
-            const votingEnd = val.votingEndTime?.nanos
-              ? new Date(val.votingEndTime?.seconds.low * 1000).toISOString()
-              : null
-            const content = decodeContentProposal(
-              val.content?.typeUrl ?? '',
-              val.content?.value ?? new Uint8Array()
-            )
-            return {
-              id: val.proposalId.low,
-              title: content.data?.title ?? '',
-              types: getTypeMsg(val.content?.typeUrl ?? ''),
-              status: proposalStatusList.find(
-                (item) => item.id === Number(val.status.toString())
-              ),
-              votingEnd: votingEnd ? displayDate(votingEnd) : '',
-            }
-          })
-          setProposals(proposalsList)
-          setIsLoading(false)
+    setIsLoading(true)
+    fetchProposals().then((proposals) => {
+      setTotal(proposals.length ?? 0)
+      const startIndex = page * perPage
+      const endIndex = startIndex + perPage
+
+      const proposalsList: Proposal[] = proposals
+        .sort((a: any, b: any) => b.id - a.id)
+        .slice(startIndex, endIndex)
+        .map((proposal: any) => {
+          const yesVote = proposal.yay_votes / 1000_000_000
+          const noVote = proposal.nay_votes / 1000_000_000
+          const abstainVote = proposal.abstain_votes / 1000_000_000
+          const totalVote = yesVote + noVote + abstainVote
+          let yesPercentage = 0
+          let noPercentage = 0
+          let abstainPercentage = 0
+          if (totalVote !== 0) {
+            yesPercentage = yesVote / totalVote
+            noPercentage = noVote / totalVote
+            abstainPercentage = abstainVote / totalVote
+          }
+
+          return {
+            id: proposal.id,
+            author: proposal.author.Account,
+            types: proposal.kind,
+            status: proposal.result,
+            startEpoch: proposal.start_epoch,
+            endEpoch: proposal.end_epoch,
+            yesPercentage,
+            noPercentage,
+            abstainPercentage,
+          }
         })
-        .catch(() => {
-          toast({
-            title: 'Failed to fetch datatable',
-            description: '',
-            status: 'error',
-            duration: 5000,
-            isClosable: true,
-          })
-        })
-    }
-  }, [tmClient, page, perPage])
+
+      setProposals(proposalsList)
+      setIsLoading(false)
+    })
+  }, [page, perPage])
 
   const onChangePagination = (value: {
     pageIndex: number
