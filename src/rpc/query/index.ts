@@ -1,4 +1,4 @@
-import { Account, Coin, StargateClient } from '@cosmjs/stargate'
+import { Account, Block, Coin, StargateClient } from '@cosmjs/stargate'
 import {
   Comet38Client,
   TxSearchResponse,
@@ -63,4 +63,12 @@ export async function getTxsBySender(
     page: page,
     per_page: perPage,
   })
+}
+
+export async function getBlock(
+  tmClient: Comet38Client,
+  height: number
+): Promise<Block> {
+  const client = await StargateClient.create(tmClient)
+  return client.getBlock(height)
 }
