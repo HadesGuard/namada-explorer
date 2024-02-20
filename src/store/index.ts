@@ -1,7 +1,6 @@
 import { configureStore, ThunkAction, Action } from '@reduxjs/toolkit'
 import { connectSlice } from './connectSlice'
 import { streamSlice } from './streamSlice'
-import { paramsSlice } from './paramsSlice'
 import { createWrapper } from 'next-redux-wrapper'
 
 const makeStore = () =>
@@ -9,7 +8,6 @@ const makeStore = () =>
     reducer: {
       [connectSlice.name]: connectSlice.reducer,
       [streamSlice.name]: streamSlice.reducer,
-      [paramsSlice.name]: paramsSlice.reducer,
     },
     devTools: true,
   })

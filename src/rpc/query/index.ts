@@ -49,26 +49,3 @@ export async function getBalanceStaked(
   const client = await StargateClient.create(tmClient)
   return client.getBalanceStaked(address)
 }
-
-export async function getTxsBySender(
-  tmClient: Comet38Client,
-  address: string,
-  page: number,
-  perPage: number
-): Promise<TxSearchResponse> {
-  return tmClient.txSearch({
-    query: `message.sender='${address}'`,
-    prove: true,
-    order_by: 'desc',
-    page: page,
-    per_page: perPage,
-  })
-}
-
-export async function getBlock(
-  tmClient: Comet38Client,
-  height: number
-): Promise<Block> {
-  const client = await StargateClient.create(tmClient)
-  return client.getBlock(height)
-}

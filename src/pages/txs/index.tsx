@@ -33,6 +33,7 @@ type TxData = {
   hash: string
   returnCode: number
   time: string
+  txType: string
 }
 
 type BlockData = {
@@ -74,9 +75,10 @@ export default function Transactions() {
               hash: tx.hash,
               time: block.header.time,
               returnCode: tx.return_code,
+              txType: tx.tx_type,
             }
           }
-          console.log(block)
+
           return {
             height: block.height,
             hash: tx.hash,
@@ -156,7 +158,7 @@ export default function Transactions() {
                 </Tbody>
               ) : (
                 <Tbody>
-                  {txs.map((tx) => (
+                  {txs?.map((tx) => (
                     <Tr key={tx.hash.toUpperCase()}>
                       <Td>
                         <Link
@@ -169,7 +171,7 @@ export default function Transactions() {
                         </Link>
                       </Td>
                       <Td>
-                        {tx?.returnCode == 0 ? (
+                        {tx?.returnCode == 0 || tx?.txType == 'Wrapper' ? (
                           <Tag variant="subtle" colorScheme="green">
                             <TagLeftIcon as={FiCheck} />
                             <TagLabel>Success</TagLabel>
