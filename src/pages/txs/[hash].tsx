@@ -191,7 +191,7 @@ export default function DetailTransaction() {
                     <b>Status</b>
                   </Td>
                   <Td>
-                    {tx?.returnCode == 0 ? (
+                    {tx?.returnCode == 0 || tx?.txType == 'Wrapper' ?(
                       <Tag variant="subtle" colorScheme="green">
                         <TagLeftIcon as={FiCheck} />
                         <TagLabel>Success</TagLabel>
