@@ -7,7 +7,6 @@ import { Subscription } from 'xstream'
 // Type for our state
 export interface StreamState {
   newBlock: NewBlockEvent | null
-  txEvent: TxEvent | null
   subsNewBlock: Subscription | null
   subsTxEvent: Subscription | null
 }
@@ -15,7 +14,6 @@ export interface StreamState {
 // Initial state
 const initialState: StreamState = {
   newBlock: null,
-  txEvent: null,
   subsNewBlock: null,
   subsTxEvent: null,
 }
