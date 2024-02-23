@@ -34,6 +34,7 @@ type TxData = {
   returnCode: number
   time: string
   txType: string
+  tx: any
 }
 
 type BlockData = {
@@ -76,6 +77,7 @@ export default function Transactions() {
               time: block.header.time,
               returnCode: tx.return_code,
               txType: tx.tx_type,
+              tx: tx.tx,
             }
           }
 
@@ -136,6 +138,8 @@ export default function Transactions() {
                   <Th>Tx Hash</Th>
                   <Th>Status</Th>
                   <Th>Height</Th>
+                  <Th>Type</Th>
+                  <Th>Shielded</Th>
                   <Th>Time</Th>
                 </Tr>
               </Thead>
@@ -183,6 +187,16 @@ export default function Transactions() {
                           </Tag>
                         )}
                       </Td>
+                      <Td>
+                        {tx &&
+                        tx.tx &&
+                        tx.tx.Transfer &&
+                        tx.tx.Transfer.shielded
+                          ? 'Yes'
+                          : 'No'}
+                      </Td>
+
+                      <Td>{tx.tx ? Object.keys(tx.tx)[0] : tx.txType}</Td>
                       <Td>{tx.height}</Td>
                       <Td>{timeFromNow(tx.time)}</Td>
                     </Tr>

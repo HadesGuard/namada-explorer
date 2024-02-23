@@ -132,3 +132,48 @@ export async function fetchProposals() {
     console.error('Error:', error)
   }
 }
+
+export async function fetchCurrentValidatorsList(options?: RequestInit) {
+  try {
+    const response = await fetch(
+      'https://namada-explorer-api.stakepool.dev.br/node/validators/list',
+      options
+    )
+    const data = await response.json()
+    return data.currentValidatorsList
+  } catch (error) {
+    console.error('Error:', error)
+  }
+}
+
+export async function fetchLatestBlocks(address: string) {
+  try {
+    const response = await fetch(
+      `https://namada-explorer-api.stakepool.dev.br/node/validators/validator/${address}/latestBlocks`
+    )
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`)
+    }
+    const data = await response.json()
+    return data
+  } catch (error) {
+    console.error('An error occurred while fetching the data.', error)
+    return null
+  }
+}
+
+export async function fetchLatestSignatures(address: string) {
+  try {
+    const response = await fetch(
+      `https://namada-explorer-api.stakepool.dev.br/node/validators/validator/${address}/latestSignatures`
+    )
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`)
+    }
+    const data = await response.json()
+    return data
+  } catch (error) {
+    console.error('An error occurred while fetching the data.', error)
+    return null
+  }
+}

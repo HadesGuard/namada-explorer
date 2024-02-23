@@ -8,6 +8,7 @@ import {
   Link,
   useColorModeValue,
   Text,
+  Input,
 } from '@chakra-ui/react'
 import { useEffect, useState } from 'react'
 import NextLink from 'next/link'
@@ -16,26 +17,43 @@ import DataTable from '@/components/Datatable'
 import { createColumnHelper } from '@tanstack/react-table'
 import { convertVotingPower } from '@/utils/helper'
 import {
+  fetchCurrentValidatorsList,
   fetchLastBlock,
   fetchValidatorCommitSignatures,
   fetchValidatorUptime,
-  fetchValidators,
 } from '@/apis'
 
 type ValidatorData = {
   validator: string
   uptime: number
   votingPower: string
-  commission: string
   commitSignatures: number
+  participation: number
+  moniker: string
+  tmAddress: string
 }
 
 const columnHelper = createColumnHelper<ValidatorData>()
 
 const columns = [
   columnHelper.accessor('validator', {
-    cell: (info) => info.getValue(),
+    cell: (info) => (
+      <>
+        <NextLink
+          href={`/validators/${info.row.original.validator}`}
+          style={{ color: 'cornflowerblue', cursor: 'pointer' }}
+        >
+          {info.row.original.validator}
+        </NextLink>
+        <br />
+        {info.row.original.tmAddress}
+      </>
+    ),
     header: 'Validator',
+  }),
+  columnHelper.accessor('moniker', {
+    cell: (info) => info.getValue(),
+    header: 'Moniker',
   }),
   columnHelper.accessor('uptime', {
     cell: (info) =>
@@ -52,9 +70,9 @@ const columns = [
     cell: (info) => info.getValue(),
     header: 'Commit Signatures',
   }),
-  columnHelper.accessor('commission', {
-    cell: (info) => info.getValue() + '%',
-    header: 'Commission',
+  columnHelper.accessor('participation', {
+    cell: (info) => info.getValue().toFixed(2) + '%',
+    header: 'Participation',
   }),
 ]
 
@@ -64,13 +82,28 @@ export default function Validators() {
   const [total, setTotal] = useState(0)
   const [data, setData] = useState<ValidatorData[]>([])
   const [isLoading, setIsLoading] = useState(true)
+  const [search, setSearch] = useState('')
+
+  const handleSearchChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setSearch(event.target.value)
+  }
 
   useEffect(() => {
     const controller = new AbortController()
-    fetchValidators(page + 1, perPage, { signal: controller.signal })
-      .then(async (response: any) => {
-        const { validators, total } = response
-        setTotal(total)
+    fetchCurrentValidatorsList({ signal: controller.signal })
+      .then(async (res: any) => {
+        setTotal(res.length)
+        console.log(search)
+        const validators = search
+          ? res
+              .filter(
+                (item: any) =>
+                  item.address.includes(search) ||
+                  item.moniker.includes(search) ||
+                  item.operator_address.includes(search)
+              )
+              .slice(page * perPage, (page + 1) * perPage)
+          : res.slice(page * perPage, (page + 1) * perPage)
         const lastedBlock = await fetchLastBlock().then((data) => {
           return data.header.height
         })
@@ -78,10 +111,12 @@ export default function Validators() {
         // Set initial data with loading state
         const initialData = validators.map((val: any) => ({
           validator: val.address,
+          tmAddress: val.operator_address,
           uptime: 0,
           votingPower: convertVotingPower(val.voting_power),
-          commission: '5',
+          participation: val.voting_percentage,
           commitSignatures: 'Loading...',
+          moniker: val.moniker,
         }))
         setData(initialData)
 
@@ -110,8 +145,10 @@ export default function Validators() {
                         validator: val.address,
                         uptime: parseFloat(uptime),
                         votingPower: convertVotingPower(val.voting_power),
-                        commission: '5',
-                        commitSignatures,
+                        participation: val.voting_percentage,
+                        commitSignatures: commitSignatures,
+                        moniker: val.moniker,
+                        tmAddress: val.operator_address,
                       }
                     : item
                 )
@@ -124,6 +161,7 @@ export default function Validators() {
         setIsLoading(false)
       })
       .catch((e) => {
+        console.log(e)
         // Ignore errors caused by aborting the fetch request
         if (e.name === 'AbortError') {
           return
@@ -134,7 +172,7 @@ export default function Validators() {
       // Abort the fetch request when a new one is made
       controller.abort()
     }
-  }, [page, perPage])
+  }, [page, perPage, search])
 
   const onChangePagination = (value: {
     pageIndex: number
@@ -173,6 +211,7 @@ export default function Validators() {
           <Icon fontSize="16" as={FiShield} />
           <Text>Validators</Text>
         </HStack>
+
         <Box
           mt={8}
           bg={useColorModeValue('light-container', 'dark-container')}
@@ -180,6 +219,20 @@ export default function Validators() {
           borderRadius={4}
           p={4}
         >
+          <Input
+            type="text"
+            value={search}
+            onChange={handleSearchChange}
+            placeholder="Search by address or moniker or tendermint address"
+            bg={useColorModeValue('white', 'gray.800')}
+            border={1}
+            color={'gray.500'}
+            _placeholder={{ color: 'gray.500' }}
+            mb={2} // Add margin bottom to separate the input from the box
+            size="md"
+            ml={4}
+            maxWidth={500}
+          />
           <DataTable
             columns={columns}
             data={data}

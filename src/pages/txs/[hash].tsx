@@ -36,7 +36,7 @@ type TxDetail = {
   fee: string
   returnCode: number
   data: string
-  tx: string
+  tx: any
   txType: string
 }
 
@@ -191,7 +191,7 @@ export default function DetailTransaction() {
                     <b>Status</b>
                   </Td>
                   <Td>
-                    {tx?.returnCode == 0 || tx?.txType == 'Wrapper' ?(
+                    {tx?.returnCode == 0 || tx?.txType == 'Wrapper' ? (
                       <Tag variant="subtle" colorScheme="green">
                         <TagLeftIcon as={FiCheck} />
                         <TagLabel>Success</TagLabel>
@@ -221,7 +221,7 @@ export default function DetailTransaction() {
                 </Tr>
                 <Tr>
                   <Td pl={0} width={150}>
-                    <b>Time 2</b>
+                    <b>Time</b>
                   </Td>
                   <Td>
                     {block?.time
@@ -243,6 +243,16 @@ export default function DetailTransaction() {
                   </Td>
                   <Td>
                     {tx?.gasUsed ? `${tx.gasUsed} / ${tx.gasWanted}` : ''}
+                  </Td>
+                </Tr>
+                <Tr>
+                  <Td pl={0} width={150}>
+                    <b>Shielded</b>
+                  </Td>
+                  <Td>
+                    {tx && tx.tx && tx.tx.Transfer && tx.tx.Transfer.shielded
+                      ? 'Yes'
+                      : 'No'}
                   </Td>
                 </Tr>
                 <Tr>
