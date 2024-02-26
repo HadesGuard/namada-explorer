@@ -6,6 +6,7 @@ import {
   setTmClient,
   setRPCAddress,
 } from '@/store/connectSlice'
+import { LS_RPC_ADDRESS } from '@/utils/constant'
 import { validateConnection, connectWebsocketClient } from '@/rpc/client'
 
 export default function Connect() {
@@ -51,6 +52,7 @@ export default function Connect() {
       dispatch(setRPCAddress(rpcAddress))
       setState('success')
 
+      window.localStorage.setItem(LS_RPC_ADDRESS, rpcAddress)
     } catch (err) {
       console.error(err)
       setError(true)
