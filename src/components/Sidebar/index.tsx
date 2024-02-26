@@ -48,13 +48,13 @@ const RefLinkItems: Array<LinkItemProps> = [
   {
     name: 'Github',
     icon: FiGithub,
-    route: 'https://github.com/TuanTQ15/namada-explorer',
+    route: 'https://github.com/NodeValidatorVN/namada-explorer',
     isBlank: true,
   },
   {
     name: 'Report Issues',
     icon: FiAlertCircle,
-    route: 'https://github.com/TuanTQ15/namada-explorer/issues',
+    route: 'https://github.com/NodeValidatorVN/namada-explorer/issues',
     isBlank: true,
   },
 ]
