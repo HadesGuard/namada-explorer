@@ -137,9 +137,9 @@ export default function Transactions() {
                 <Tr>
                   <Th>Tx Hash</Th>
                   <Th>Status</Th>
-                  <Th>Height</Th>
-                  <Th>Type</Th>
                   <Th>Shielded</Th>
+                  <Th>Type</Th>
+                  <Th>Height</Th>
                   <Th>Time</Th>
                 </Tr>
               </Thead>
